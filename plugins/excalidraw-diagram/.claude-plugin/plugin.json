@@ -1,0 +1,10 @@
+{
+  "name": "excalidraw-diagram",
+  "version": "0.1.0",
+  "description": "Generate Excalidraw diagrams that argue visually — concept-driven layouts, evidence artifacts, and a render-and-validate loop that catches layout defects before delivery.",
+  "author": {
+    "name": "Matteo Fiore",
+    "email": "matteo.fiore@dnb.no"
+  },
+  "license": "MIT"
+}
