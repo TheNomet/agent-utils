@@ -1,0 +1,10 @@
+{
+  "name": "git-commit",
+  "version": "0.1.0",
+  "description": "Write Conventional Commit messages with a tight, why-focused body. Skips the verbose 50-line transcripts of the diff that LLMs default to.",
+  "author": {
+    "name": "Matteo Fiore",
+    "email": "matteo.fiore@dnb.no"
+  },
+  "license": "MIT"
+}
