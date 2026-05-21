@@ -1,0 +1,3 @@
+# Plugins live here.
+# Use `cp -r templates/plugin plugins/<your-plugin>` to scaffold a new one.
+# See ../CONTRIBUTING.md for full instructions.

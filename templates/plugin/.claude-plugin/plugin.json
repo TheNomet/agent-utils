@@ -1,0 +1,10 @@
+{
+  "name": "example-plugin",
+  "version": "0.1.0",
+  "description": "Short, action-oriented description of what this plugin does. Shown in `/plugin` UI.",
+  "author": {
+    "name": "Your Name",
+    "email": "your.name@dnb.no"
+  },
+  "license": "MIT"
+}
