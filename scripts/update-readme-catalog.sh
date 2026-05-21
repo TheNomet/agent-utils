@@ -44,19 +44,34 @@ if [[ "$plugin_count" -eq 0 ]]; then
   block=$'_No plugins yet — see [CONTRIBUTING.md](./CONTRIBUTING.md) to add the first one._'
 else
   block=$(jq -r '
-    .plugins
-    | sort_by(.name)
-    | map("- **`\(.name)`** — \(.description // "")")
+    [
+      "| Plugin | Category | Description |",
+      "|--------|----------|-------------|"
+    ]
+    + (
+      .plugins
+      | sort_by(.name)
+      | map("| `\(.name)` | \(.category // "—") | \(.description // "") |")
+    )
     | join("\n")
   ' "$manifest")
 fi
 
 tmp=$(mktemp)
-awk -v begin="$begin_marker" -v end="$end_marker" -v block="$block" '
-  $0 == begin { print; print block; in_block = 1; next }
+block_file=$(mktemp)
+printf '%s\n' "$block" > "$block_file"
+awk -v begin="$begin_marker" -v end="$end_marker" -v block_file="$block_file" '
+  $0 == begin {
+    print
+    while ((getline line < block_file) > 0) print line
+    close(block_file)
+    in_block = 1
+    next
+  }
   $0 == end   { in_block = 0; print; next }
   !in_block   { print }
 ' "$readme" > "$tmp"
 mv "$tmp" "$readme"
+rm -f "$block_file"
 
 echo "updated README.md catalog (${plugin_count} plugin(s))"
