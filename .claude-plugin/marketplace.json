@@ -1,0 +1,12 @@
+{
+  "name": "ed-ct-agent-utils",
+  "owner": {
+    "name": "ED CT",
+    "url": "https://dnb.ghe.com/ed-ct/agent-utils"
+  },
+  "metadata": {
+    "description": "Shared Claude Code plugins for the ED CT team — skills, commands, agents, hooks, and scripts.",
+    "version": "0.1.0"
+  },
+  "plugins": []
+}

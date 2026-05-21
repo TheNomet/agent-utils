@@ -1,0 +1,64 @@
+# Run: pre-commit install -t pre-commit -t pre-push -t commit-msg
+# Then commit normally; hooks run automatically.
+# Manual run: pre-commit run --all-files
+
+repos:
+  # --- Standard hygiene -----------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-json
+        files: \.json$
+      - id: check-yaml
+        files: \.(yml|yaml)$
+      - id: check-executables-have-shebangs
+
+  # --- Shell scripts --------------------------------------------------------
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        files: \.(sh|bash)$
+
+  # --- Conventional Commit message format ----------------------------------
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        # Allowed types — match the `git-commit` skill convention.
+        args:
+          - feat
+          - fix
+          - chore
+          - docs
+          - refactor
+          - test
+          - ci
+          - perf
+          - style
+          - build
+
+  # --- Local: keep README plugin catalog in sync ---------------------------
+  - repo: local
+    hooks:
+      - id: update-readme-catalog
+        name: update README plugin catalog from marketplace.json
+        entry: scripts/update-readme-catalog.sh
+        language: script
+        pass_filenames: false
+        # Only run when the manifest, the script, or the README change.
+        files: ^(\.claude-plugin/marketplace\.json|scripts/update-readme-catalog\.sh|README\.md)$
+        stages: [pre-commit]
+
+      # Belt-and-braces: re-run on push and fail if the README is out of sync.
+      - id: catalog-in-sync
+        name: verify README plugin catalog is in sync
+        entry: bash -c './scripts/update-readme-catalog.sh >/dev/null && git diff --exit-code -- README.md'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
