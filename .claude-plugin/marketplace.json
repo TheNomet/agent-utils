@@ -8,5 +8,17 @@
     "description": "Shared Claude Code plugins for the ED CT team — skills, commands, agents, hooks, and scripts.",
     "version": "0.1.0"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "git-commit",
+      "source": "./plugins/git-commit",
+      "description": "Write Conventional Commit messages with a tight, why-focused body. Skips the verbose 50-line transcripts of the diff that LLMs default to.",
+      "version": "0.1.0",
+      "category": "workflows",
+      "author": {
+        "name": "Matteo Fiore",
+        "email": "matteo.fiore@dnb.no"
+      }
+    }
+  ]
 }
