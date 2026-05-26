@@ -8,3 +8,6 @@ __pycache__/
 *.pyc
 .env
 .env.local
+
+# Local scratch space for testing/experiments — never committed.
+tmp/
