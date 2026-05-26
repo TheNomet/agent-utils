@@ -30,6 +30,17 @@
         "name": "Matteo Fiore",
         "email": "matteo.fiore@dnb.no"
       }
+    },
+    {
+      "name": "git-worktree",
+      "source": "./plugins/git-worktree",
+      "description": "Bootstrap and operate a bare-clone + worktree layout, so multiple branches live as sibling folders off a single repo and agents stay scoped to their own working tree.",
+      "version": "0.1.0",
+      "category": "workflows",
+      "author": {
+        "name": "Matteo Fiore",
+        "email": "matteo.fiore@dnb.no"
+      }
     }
   ]
 }

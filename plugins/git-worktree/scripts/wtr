@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# wtr — remove a worktree, optionally deleting its branch if merged.
+#
+# Usage:
+#   wtr <path> [--force] [--delete-branch]
+#
+# <path> may be relative to the project root or to the current directory.
+# --force            forward to `git worktree remove --force` (discards uncommitted changes)
+# --delete-branch    also delete the branch the worktree was on, but ONLY if it
+#                    is fully merged into the default base. Refuses otherwise.
+
+set -euo pipefail
+
+# Resolve to the real script location even when invoked through a symlink.
+__wt_script="${BASH_SOURCE[0]}"
+while [ -L "$__wt_script" ]; do
+    __wt_target=$(readlink "$__wt_script")
+    case "$__wt_target" in
+        /*) __wt_script="$__wt_target" ;;
+        *)  __wt_script="$(dirname "$__wt_script")/$__wt_target" ;;
+    esac
+done
+SCRIPT_DIR=$(cd "$(dirname "$__wt_script")" && pwd -P)
+unset __wt_script __wt_target
+# shellcheck source=wt-common.sh
+. "$SCRIPT_DIR/wt-common.sh"
+
+usage() {
+    cat >&2 <<'EOF'
+usage: wtr <path> [--force] [--delete-branch]
+
+  --force, -f          discard uncommitted changes in the worktree
+  --delete-branch, -d  delete the branch too (only if merged)
+  -h, --help           show this help
+EOF
+}
+
+force=false
+delete_branch=false
+target=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -f|--force) force=true; shift ;;
+        -d|--delete-branch) delete_branch=true; shift ;;
+        -h|--help) usage; exit 0 ;;
+        -*) wt_die "unknown flag: $1" ;;
+        *)
+            [ -z "$target" ] || wt_die "extra positional argument: $1"
+            target="$1"; shift ;;
+    esac
+done
+
+[ -n "$target" ] || { usage; exit 1; }
+
+root=$(wt_find_root) || wt_die "not inside a bare-worktree layout"
+
+# Resolve target to an absolute path: try as-is, then relative to root.
+if [ -d "$target" ]; then
+    abs=$(cd "$target" && pwd -P)
+elif [ -d "$root/$target" ]; then
+    abs=$(cd "$root/$target" && pwd -P)
+else
+    wt_die "no such worktree: $target"
+fi
+
+# Capture branch BEFORE removing the worktree.
+branch=""
+if [ -e "$abs/.git" ]; then
+    branch=$(git -C "$abs" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+fi
+
+if $force; then
+    git -C "$root" worktree remove --force "$abs"
+else
+    git -C "$root" worktree remove "$abs"
+fi
+git -C "$root" worktree prune
+
+if $delete_branch; then
+    if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then
+        wt_log "removed worktree at $abs (was detached, no branch to delete)"
+        exit 0
+    fi
+    base=$(wt_default_base "$root") || wt_die "removed worktree at $abs, but could not determine default base for merge check"
+    if git -C "$root" merge-base --is-ancestor "refs/heads/$branch" "refs/remotes/$base" 2>/dev/null; then
+        git -C "$root" branch -d "$branch"
+        wt_log "removed worktree at $abs and deleted merged branch '$branch'"
+    else
+        wt_die "removed worktree at $abs, but branch '$branch' is not merged into $base — not deleting (use \`git branch -D $branch\` if you really want)"
+    fi
+else
+    wt_log "removed worktree at $abs"
+fi

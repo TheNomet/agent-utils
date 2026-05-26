@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# wtree — bootstrap a "pro" git worktree workflow using a bare clone.
+#
+# Usage: wtree <git-url>   (run inside an empty directory)
+#
+# After this script finishes, the directory looks like:
+#
+#   ./
+#   ├── .bare/        # the actual git database (bare clone)
+#   └── .git          # one-line file: "gitdir: ./.bare"
+#
+# From there, every branch you want to work on becomes a sibling folder:
+#
+#   git worktree add main                 # tracks origin/main
+#   git worktree add -b feat/foo feat/foo origin/main
+#
+# Source / inspiration: https://dev.to/metal3d/git-worktree-like-a-boss-2j1b
+
+set -euo pipefail
+
+SCRIPT_NAME=$(basename "$0")
+
+usage() {
+    cat >&2 <<EOF
+usage: $SCRIPT_NAME <repo-url>
+
+Bootstrap a bare-clone + worktree layout in the current (empty) directory.
+Creates .bare/, the .git pointer file, configures the all-branches fetch
+refspec, and runs 'git fetch --all'.
+
+After this finishes, create your first worktree with:
+    git worktree add main          # or: wta main
+
+Options:
+  -h, --help   show this help
+EOF
+}
+
+case "${1:-}" in
+    -h|--help) usage; exit 0 ;;
+esac
+
+REPO_URL="${1:-}"
+
+if [ -z "$REPO_URL" ]; then
+    echo "Error: missing repository URL." >&2
+    usage
+    exit 1
+fi
+
+# 1. Refuse to run unless the directory is empty.
+if [ -n "$(ls -A 2>/dev/null)" ]; then
+    echo "Error: current directory is not empty." >&2
+    echo "Run wtree inside a fresh folder so the bare clone stays clean." >&2
+    exit 1
+fi
+
+echo "Initializing bare-clone worktree layout..."
+
+# 2. Clone as bare into a hidden directory.
+git clone --bare "$REPO_URL" .bare
+
+# 3. Point the root at the bare repo so plain `git` commands work here.
+echo "gitdir: ./.bare" > .git
+
+# 4. Make `git fetch` see every remote branch, not just the cloned HEAD.
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
+# 5. Pull all refs so worktrees can be created from any branch.
+git fetch --all
+
+echo "Done. Next: 'git worktree add main' (or any branch you need)."

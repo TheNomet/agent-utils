@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# wtl — pretty `git worktree list`. Shows folder · branch · last-commit subject.
+
+set -euo pipefail
+
+# Resolve to the real script location even when invoked through a symlink.
+__wt_script="${BASH_SOURCE[0]}"
+while [ -L "$__wt_script" ]; do
+    __wt_target=$(readlink "$__wt_script")
+    case "$__wt_target" in
+        /*) __wt_script="$__wt_target" ;;
+        *)  __wt_script="$(dirname "$__wt_script")/$__wt_target" ;;
+    esac
+done
+SCRIPT_DIR=$(cd "$(dirname "$__wt_script")" && pwd -P)
+unset __wt_script __wt_target
+# shellcheck source=wt-common.sh
+. "$SCRIPT_DIR/wt-common.sh"
+
+usage() {
+    cat >&2 <<'EOF'
+usage: wtl
+
+List git worktrees in the current bare-clone layout, formatted as:
+    <path-relative-to-root>  <branch>  <last-commit-subject>
+
+No arguments. Run from anywhere inside a bare-worktree layout.
+
+Options:
+  -h, --help   show this help
+EOF
+}
+
+case "${1:-}" in
+    -h|--help) usage; exit 0 ;;
+    "") ;;
+    *) wt_die "wtl takes no arguments (got: $1). Try 'wtl --help'." ;;
+esac
+
+root=$(wt_find_root) || wt_die "not inside a bare-worktree layout"
+
+# Parse the porcelain output. Entries are separated by blank lines. Emit one
+# tab-separated line per entry: <abs-path>\t<rel-path>\t<branch>\t<sha>.
+# We keep the absolute path in the second-to-last column so the existence
+# check below can stat it without re-resolving.
+git -C "$root" worktree list --porcelain | awk -v root="$root" '
+    function flush() {
+        if (path != "") {
+            rel = path
+            if (index(rel, root "/") == 1) rel = substr(rel, length(root) + 2)
+            else if (rel == root)          rel = "."
+            printf "%s\t%s\t%s\t%s\n", path, rel, branch, sha
+        }
+        path = ""; branch = ""; sha = ""
+    }
+    /^worktree / { path = substr($0, 10) }
+    /^HEAD /     { sha  = substr($0, 6, 7) }
+    /^branch /   { b = substr($0, 8); sub(/^refs\/heads\//, "", b); branch = b }
+    /^bare$/     { branch = "(bare)" }
+    /^detached$/ { branch = "(detached)" }
+    /^$/         { flush() }
+    END          { flush() }
+' | while IFS=$'\t' read -r abs rel branch sha; do
+    if [ "$branch" = "(bare)" ]; then
+        subject=""
+    elif [ ! -d "$abs" ]; then
+        # The porcelain still lists this entry, but the directory is gone.
+        # Tag it so the user sees the diagnostic the SKILL points them at.
+        branch="$branch (stale, run \`git worktree prune\`)"
+        subject=""
+    elif [ -z "$sha" ]; then
+        subject=""
+    else
+        subject=$(git -C "$root" log -1 --format=%s "$sha" 2>/dev/null || true)
+    fi
+    printf '%-32s  %-48s  %s\n' "$rel" "$branch" "$subject"
+done

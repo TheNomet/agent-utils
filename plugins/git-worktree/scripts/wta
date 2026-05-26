@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# wta — add a git worktree with smart defaults.
+#
+# Usage:
+#   wta <branch> [base]                  # folder = branch
+#   wta --folder <path> <branch> [base]  # custom folder
+#
+# Behavior:
+#   - Run from anywhere inside a bare-worktree layout (a dir with .bare/ + .git
+#     pointer); wta walks up to find the project root.
+#   - If <branch> already exists on origin (or locally), it's checked out into
+#     the new worktree. Otherwise a new branch is created from [base].
+#   - [base] defaults to origin/HEAD (the remote's default branch).
+#   - Prints the absolute path of the new worktree on the LAST line of stdout
+#     so callers can do `cd "$(wta ...)"`. Everything else goes to stderr.
+
+set -euo pipefail
+
+# Resolve to the real script location even when invoked through a symlink
+# in $PATH (e.g. ~/.local/bin/wta -> .../plugins/git-worktree/scripts/wta).
+# This lets `/wtree-install` symlink only the four binaries; the shared
+# library wt-common.sh stays in the plugin dir and is sourced from there.
+__wt_script="${BASH_SOURCE[0]}"
+while [ -L "$__wt_script" ]; do
+    __wt_target=$(readlink "$__wt_script")
+    case "$__wt_target" in
+        /*) __wt_script="$__wt_target" ;;
+        *)  __wt_script="$(dirname "$__wt_script")/$__wt_target" ;;
+    esac
+done
+SCRIPT_DIR=$(cd "$(dirname "$__wt_script")" && pwd -P)
+unset __wt_script __wt_target
+# shellcheck source=wt-common.sh
+. "$SCRIPT_DIR/wt-common.sh"
+
+usage() {
+    cat >&2 <<'EOF'
+usage: wta <branch> [base]
+       wta --here <branch>
+       wta --folder <path> <branch> [base]
+
+Creates a new worktree. <branch> doubles as the folder name unless --folder is
+given. If the branch exists on origin (or locally) it is checked out;
+otherwise it is created from [base].
+
+[base] may be:
+  - any git revision (default: origin/HEAD, the remote's default branch)
+  - "." or "HEAD" — fork from the CURRENT worktree's HEAD (useful for
+    sub-experiments off a feature branch you're already working on)
+
+Options:
+  --here           shorthand for using the current worktree's HEAD as base
+  --folder <path>  custom folder relative to the project root
+  -h, --help       show this help
+EOF
+}
+
+folder=""
+here=false
+positional=()
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --folder) folder="$2"; shift 2 ;;
+        --here) here=true; shift ;;
+        -h|--help) usage; exit 0 ;;
+        --) shift; while [ $# -gt 0 ]; do positional+=("$1"); shift; done ;;
+        -*) wt_die "unknown flag: $1" ;;
+        *) positional+=("$1"); shift ;;
+    esac
+done
+
+[ ${#positional[@]} -ge 1 ] || { usage; exit 1; }
+branch="${positional[0]}"
+base="${positional[1]:-}"
+
+if $here; then
+    [ -z "$base" ] || wt_die "--here cannot be combined with an explicit base argument"
+    base="."
+fi
+
+root=$(wt_find_root) || wt_die "not inside a bare-worktree layout (no .bare/ + .git pointer found walking up from $PWD)"
+
+[ -n "$folder" ] || folder="$branch"
+target="$root/$folder"
+[ -e "$target" ] && wt_die "$target already exists"
+
+# Refresh remote refs so existence checks and the base ref are current.
+# Failures here are non-fatal — offline use is still valid (cached refs/remotes
+# may be stale; user is on their own).
+git -C "$root" fetch --quiet origin \
+    || wt_log "warning: git fetch failed, proceeding with cached refs (may be stale)"
+
+if wt_branch_exists_on_origin "$root" "$branch"; then
+    if wt_branch_exists_locally "$root" "$branch"; then
+        # Both local and origin exist. Prefer origin's tip — but only if the
+        # local branch can fast-forward to it. If local has diverged (commits
+        # not on origin), we cannot silently throw them away.
+        local_sha=$(git -C "$root" rev-parse "refs/heads/$branch")
+        origin_sha=$(git -C "$root" rev-parse "refs/remotes/origin/$branch")
+        if [ "$local_sha" = "$origin_sha" ]; then
+            wt_log "checking out '$branch' into $target (local matches origin)"
+        elif git -C "$root" merge-base --is-ancestor "$local_sha" "$origin_sha"; then
+            wt_log "fast-forwarding local '$branch' to origin and checking out into $target"
+            # --quiet + >&2: `git branch --force` auto-sets upstream when the
+            # new tip is a remote-tracking ref and announces it on stdout,
+            # which would corrupt the script's contract that stdout's last
+            # line is the new worktree path.
+            git -C "$root" branch --quiet --force "$branch" "refs/remotes/origin/$branch" >&2
+        else
+            wt_log "warning: local '$branch' has commits not on origin; checking out local as-is"
+            wt_log "         (delete the local branch first if you want origin's version)"
+        fi
+        git -C "$root" worktree add "$target" "$branch" >&2
+    else
+        wt_log "checking out 'origin/$branch' into $target (new local branch tracks origin)"
+        git -C "$root" worktree add --track -b "$branch" "$target" "origin/$branch" >&2
+    fi
+elif wt_branch_exists_locally "$root" "$branch"; then
+    wt_log "checking out existing local branch '$branch' into $target (no origin counterpart)"
+    git -C "$root" worktree add "$target" "$branch" >&2
+else
+    base_label=""
+    if [ "$base" = "." ] || [ "$base" = "HEAD" ]; then
+        # Resolve from the CALLER's worktree, not the bare root. The bare repo
+        # has its own HEAD that is not what the user means.
+        if ! current_top=$(git rev-parse --show-toplevel 2>/dev/null) \
+           || [ "$current_top" = "$root" ] || [ -z "$current_top" ]; then
+            wt_die "cannot use '$base' as base: not inside a checked-out worktree (you're at the bare root or outside any worktree)"
+        fi
+        here_sha=$(git -C "$current_top" rev-parse HEAD 2>/dev/null) \
+            || wt_die "could not resolve current worktree HEAD"
+        here_branch=$(git -C "$current_top" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+        base="$here_sha"
+        base_label="current worktree HEAD${here_branch:+ ($here_branch)}"
+    fi
+
+    if [ -z "$base" ]; then
+        base=$(wt_default_base "$root") \
+            || wt_die "could not determine default base branch; pass it explicitly: wta $branch <base>"
+        base_label="$base"
+
+        # If the caller is on a non-default branch, they may have meant to fork
+        # from where they are rather than from origin/HEAD. Surface the option.
+        if current_top=$(git rev-parse --show-toplevel 2>/dev/null) \
+           && [ -n "$current_top" ] && [ "$current_top" != "$root" ]; then
+            current_branch=$(git -C "$current_top" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+            default_branch=${base#origin/}
+            if [ -n "$current_branch" ] && [ "$current_branch" != "$default_branch" ] && [ "$current_branch" != "HEAD" ]; then
+                wt_log "hint: forking from $base; you're currently on '$current_branch' — pass '.' as the base to fork from there instead"
+            fi
+        fi
+    fi
+    : "${base_label:=$base}"
+
+    wt_log "creating new branch '$branch' off $base_label in $target"
+    git -C "$root" worktree add -b "$branch" "$target" "$base" >&2
+fi
+
+# Final line of stdout = the new worktree path. Callers wrap with cd "$(wta ...)".
+printf '%s\n' "$target"
