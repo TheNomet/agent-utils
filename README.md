@@ -11,6 +11,7 @@ utility lives under `plugins/<name>/` and is installed independently. Members pi
 | Plugin | Category | Description |
 |--------|----------|-------------|
 | `excalidraw-diagram` | workflows | Generate Excalidraw diagrams that argue visually — concept-driven layouts, evidence artifacts, and a render-and-validate loop that catches layout defects before delivery. |
+| `git-bare-convert` | workflows | Convert an existing plain `git clone` into a `.bare/` + worktrees layout in place, without re-cloning. Re-attaches the current branch as the first worktree. |
 | `git-commit` | workflows | Write Conventional Commit messages with a tight, why-focused body. Skips the verbose 50-line transcripts of the diff that LLMs default to. |
 | `git-worktree` | workflows | Bootstrap and operate a bare-clone + worktree layout, so multiple branches live as sibling folders off a single repo and agents stay scoped to their own working tree. |
 <!-- END: plugins-catalog -->
