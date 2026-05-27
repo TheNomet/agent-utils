@@ -1,0 +1,10 @@
+{
+  "name": "git-bare-convert",
+  "version": "0.1.0",
+  "description": "Convert an existing plain `git clone` into a `.bare/` + worktrees layout in place, without re-cloning. Re-attaches the current branch as the first worktree.",
+  "author": {
+    "name": "Matteo Fiore",
+    "email": "matteo.fiore@dnb.no"
+  },
+  "license": "MIT"
+}
