@@ -14,5 +14,5 @@ Short description of what this plugin gives the user when installed.
 Once the marketplace is added (see repo root README):
 
 ```
-/plugin install example-plugin@ed-ct-agent-utils
+/plugin install example-plugin@agent-utils
 ```

@@ -86,7 +86,7 @@ This rewrites the catalog block inside `README.md` between the `<!-- BEGIN: plug
 
 ```
 /plugin marketplace add /Users/you/projects/github/agent-utils
-/plugin install <your-plugin>@ed-ct-agent-utils
+/plugin install <your-plugin>@agent-utils
 ```
 
 Reload (`/plugin`) and try triggering your skill/command.

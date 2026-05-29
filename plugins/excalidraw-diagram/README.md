@@ -28,7 +28,7 @@ Edit `skills/excalidraw-diagram/references/color-palette.md`. Everything else in
 ## Install
 
 ```
-/plugin install excalidraw-diagram@ed-ct-agent-utils
+/plugin install excalidraw-diagram@agent-utils
 ```
 
 ## Credits

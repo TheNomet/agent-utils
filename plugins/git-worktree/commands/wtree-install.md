@@ -47,7 +47,7 @@ The shared library `wt-common.sh` is **not** installed alongside — the scripts
    - One usage example:
      ```bash
      mkdir my-repo && cd my-repo
-     wtree git@dnb.ghe.com:org/my-repo.git
+     wtree git@github.com:org/my-repo.git
      cd "$(wta feat/EDM-1234)"   # add a worktree and cd into it
      ```
 
@@ -55,5 +55,5 @@ The shared library `wt-common.sh` is **not** installed alongside — the scripts
 
 - This command does not edit the user's shell rc. There is no auto-cd shell function — the helpers are plain scripts, and a script can't change its parent shell's directory. If the user wants `wta` to also `cd`, they wrap it themselves: `cd "$(wta <branch>)"`.
 - To reverse this, run `/wtree-uninstall`. It removes the symlinks (or copies, if they still match the plugin's version).
-- If `${CLAUDE_PLUGIN_ROOT}` is unset, abort: the plugin isn't loaded properly. Tell the user to install via `/plugin install git-worktree@ed-ct-agent-utils` first.
+- If `${CLAUDE_PLUGIN_ROOT}` is unset, abort: the plugin isn't loaded properly. Tell the user to install via `/plugin install git-worktree@agent-utils` first.
 - Never run `wtree`, `wta`, etc. as part of this command — installation is separate from any actual repo bootstrap.

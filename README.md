@@ -1,9 +1,8 @@
 # agent-utils
 
-Shared **Claude Code plugins** for the ED CT team — skills, slash commands, subagents, hooks, and helper scripts.
+A [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins) — skills, slash commands, subagents, hooks, and helper scripts.
 
-This repo is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins). Each
-utility lives under `plugins/<name>/` and is installed independently. Members pick only what they need.
+Each utility lives under `plugins/<name>/` and is installed independently. Pick only what you need.
 
 ## Plugins
 
@@ -21,7 +20,7 @@ utility lives under `plugins/<name>/` and is installed independently. Members pi
 In Claude Code, add the marketplace once:
 
 ```
-/plugin marketplace add dnb@dnb.ghe.com:ed-ct/agent-utils.git
+/plugin marketplace add TheNomet/agent-utils
 ```
 
 Then **browse and install interactively**:
@@ -35,18 +34,18 @@ This opens a picker showing every plugin in every marketplace you've added, with
 If you already know the plugin name, you can install directly:
 
 ```
-/plugin install <plugin-name>@ed-ct-agent-utils
+/plugin install <plugin-name>@agent-utils
 ```
 
 Other useful commands:
 
-- `/plugin marketplace info ed-ct-agent-utils` — list everything in this marketplace
+- `/plugin marketplace info agent-utils` — list everything in this marketplace
 - `/plugin marketplace list` — list marketplaces you've added
-- `/plugin marketplace update ed-ct-agent-utils` — pull the latest registry
+- `/plugin marketplace update agent-utils` — pull the latest registry
 
 > **Tip — point an agent here and let it install for you.**
 > Open Claude Code in any repo and say:
-> *"Add the marketplace at `dnb@dnb.ghe.com:ed-ct/agent-utils.git` and install the plugins I need for &lt;task&gt;."*
+> *"Add the marketplace `TheNomet/agent-utils` and install the plugins I need for &lt;task&gt;."*
 > Claude will run the right `/plugin` commands.
 
 ## Repo layout

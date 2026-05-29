@@ -9,5 +9,5 @@ Write Conventional Commit messages that match what experienced engineers actuall
 ## Install
 
 ```
-/plugin install git-commit@ed-ct-agent-utils
+/plugin install git-commit@agent-utils
 ```

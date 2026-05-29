@@ -49,7 +49,7 @@ The user wants a brand-new bare-clone setup, typically because they're starting 
 
 ### Install helpers
 
-User has installed the plugin via `/plugin install git-worktree@ed-ct-agent-utils` and now needs `wtree`, `wta`, `wtl`, `wtr` on `$PATH`. Run the slash command:
+User has installed the plugin via `/plugin install git-worktree@agent-utils` and now needs `wtree`, `wta`, `wtl`, `wtr` on `$PATH`. Run the slash command:
 
 ```
 /wtree-install
@@ -65,7 +65,7 @@ User wants to remove the helpers from `$PATH` (and clean the rc source line). Ru
 /wtree-uninstall
 ```
 
-It only removes files this plugin actually installed: symlinks pointing at the plugin, or copies whose content still matches. Foreign or modified files at the same paths are left alone with a warning. The rc edit is gated on confirmation and creates a `.bak` first. Run `/wtree-uninstall --dry-run` first if you want to see exactly what would be touched. Run this **before** `/plugin uninstall git-worktree@ed-ct-agent-utils` — once the plugin is gone, `${CLAUDE_PLUGIN_ROOT}` is unset and the cleanup can't verify symlink targets.
+It only removes files this plugin actually installed: symlinks pointing at the plugin, or copies whose content still matches. Foreign or modified files at the same paths are left alone with a warning. The rc edit is gated on confirmation and creates a `.bak` first. Run `/wtree-uninstall --dry-run` first if you want to see exactly what would be touched. Run this **before** `/plugin uninstall git-worktree@agent-utils` — once the plugin is gone, `${CLAUDE_PLUGIN_ROOT}` is unset and the cleanup can't verify symlink targets.
 
 ### Add a worktree
 

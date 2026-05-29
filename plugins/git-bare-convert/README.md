@@ -13,7 +13,7 @@ Triggers on requests like "convert this clone to a bare repo", "transform this i
 ## Install
 
 ```
-/plugin install git-bare-convert@ed-ct-agent-utils
+/plugin install git-bare-convert@agent-utils
 ```
 
 ## Usage

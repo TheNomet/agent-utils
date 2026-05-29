@@ -17,7 +17,7 @@ Bootstrap and operate a bare-clone + worktree layout, so multiple branches live 
 ## Install
 
 ```
-/plugin install git-worktree@ed-ct-agent-utils
+/plugin install git-worktree@agent-utils
 /wtree-install
 ```
 
@@ -27,7 +27,7 @@ The first line installs the plugin (skill + scripts + slash commands). The secon
 
 ```bash
 mkdir my-repo && cd my-repo
-wtree git@dnb.ghe.com:org/my-repo.git     # bootstrap
+wtree git@github.com:org/my-repo.git     # bootstrap
 cd "$(wta main)"                           # first worktree, cd into it
 cd "$(wta feat/EDM-1234)"                  # new branch off origin/HEAD, cd into it
 # ... do work ...

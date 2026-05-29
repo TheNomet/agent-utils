@@ -39,7 +39,7 @@ Safe by design: only removes files this plugin actually installed. Foreign files
 
 ## Notes
 
-- This command does **not** uninstall the plugin itself (`/plugin uninstall git-worktree@ed-ct-agent-utils` does that). Run this *before* `/plugin uninstall` if you want symlink targets verified — once the plugin is gone, `${CLAUDE_PLUGIN_ROOT}` is unset and the cleanup can't tell foreign symlinks from this plugin's.
+- This command does **not** uninstall the plugin itself (`/plugin uninstall git-worktree@agent-utils` does that). Run this *before* `/plugin uninstall` if you want symlink targets verified — once the plugin is gone, `${CLAUDE_PLUGIN_ROOT}` is unset and the cleanup can't tell foreign symlinks from this plugin's.
 - Earlier versions of this plugin shipped a `wt-shell.sh` shell function that `/wtree-install` would source into the user's shell rc. That function was dropped because it was brittle across zsh configurations (notably `nohashdirs`). If a user upgraded across that change and still has a `# git-worktree plugin` block in their `~/.zshrc` or `~/.bashrc` referencing `wt-shell.sh`, tell them to remove those two lines manually — this command no longer touches the rc.
 - If `${CLAUDE_PLUGIN_ROOT}` is unset, the plugin isn't loaded — abort with a clear message ("install the plugin again, run /wtree-uninstall, then uninstall").
 - Do not blanket-`rm` anything in `<install-dir>` — only the named files. The user may have unrelated binaries there.
