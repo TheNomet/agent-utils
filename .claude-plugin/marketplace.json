@@ -52,6 +52,17 @@
         "name": "Matteo Fiore",
         "email": "matteo.fiore@dnb.no"
       }
+    },
+    {
+      "name": "disk-cleanup",
+      "source": "./plugins/disk-cleanup",
+      "description": "Identify macOS disk space hogs and interactively clean them up.",
+      "version": "0.1.0",
+      "category": "workflows",
+      "author": {
+        "name": "Matteo Fiore",
+        "email": "matteo.fiore@dnb.no"
+      }
     }
   ]
 }

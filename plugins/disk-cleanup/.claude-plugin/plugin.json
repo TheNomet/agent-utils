@@ -1,0 +1,7 @@
+{
+  "name": "disk-cleanup",
+  "version": "0.1.0",
+  "description": "Identify macOS disk space hogs and interactively clean them up.",
+  "author": { "name": "Matteo Fiore", "email": "matteo.fiore@dnb.no" },
+  "license": "MIT"
+}
