@@ -153,7 +153,15 @@ else
     : "${base_label:=$base}"
 
     wt_log "creating new branch '$branch' off $base_label in $target"
-    git -C "$root" worktree add -b "$branch" "$target" "$base" >&2
+    # --no-track: without it, git auto-sets the new branch's upstream to $base
+    # (e.g. origin/main) because the base is a remote-tracking ref. We instead
+    # point the branch at its OWN remote name, so push/pull target origin/$branch.
+    git -C "$root" worktree add --no-track -b "$branch" "$target" "$base" >&2
+    # origin/$branch doesn't exist yet, so --set-upstream-to would fail. Write the
+    # tracking config directly; the first `git push` creates the remote branch and
+    # subsequent pull/status report against it.
+    git -C "$root" config "branch.$branch.remote" "origin"
+    git -C "$root" config "branch.$branch.merge" "refs/heads/$branch"
 fi
 
 # Final line of stdout = the new worktree path. Callers wrap with cd "$(wta ...)".
