@@ -1,6 +1,6 @@
 {
   "name": "git-worktree",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bootstrap and operate a bare-clone + worktree layout, so multiple branches live as sibling folders off a single repo and agents stay scoped to their own working tree.",
   "author": {
     "name": "Matteo Fiore",
