@@ -63,6 +63,17 @@
         "name": "Matteo Fiore",
         "email": "matteo.fiore@dnb.no"
       }
+    },
+    {
+      "name": "mlflow",
+      "source": "./plugins/mlflow",
+      "description": "MLflow for GenAI agent observability — traceable runs, judges + evaluation, agent versioning, and programmatic Traces saved views (dashboards). Encodes the non-obvious gotchas that make traces actually traceable.",
+      "version": "0.1.0",
+      "category": "observability",
+      "author": {
+        "name": "Matteo Fiore",
+        "email": "matteo.fiore@dnb.no"
+      }
     }
   ]
 }
