@@ -1,0 +1,10 @@
+{
+  "name": "mlflow",
+  "version": "0.1.0",
+  "description": "MLflow for GenAI agent observability — traceable runs, judges + evaluation, agent versioning, and programmatic Traces saved views (dashboards). Encodes the non-obvious gotchas that make traces actually traceable.",
+  "author": {
+    "name": "Matteo Fiore",
+    "email": "matteo.fiore@dnb.no"
+  },
+  "license": "MIT"
+}
